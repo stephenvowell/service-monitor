@@ -1,0 +1,4 @@
+# Development dependencies only. The app itself uses the standard library
+# (Tkinter ships with the python.org Windows installer) and needs nothing here.
+pytest>=8.0
+pyinstaller>=6.0

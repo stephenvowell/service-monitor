@@ -35,6 +35,7 @@ except ImportError:  # pragma: no cover - non-Windows fallback
     winsound = None
 
 APP_NAME = "Service Health Monitor"
+__version__ = "1.0.0"
 HTTP_TIMEOUT = 8
 TCP_TIMEOUT = 5
 
@@ -137,6 +138,22 @@ def save_config(config):
 # --- Checks -----------------------------------------------------------------
 # Each checker returns a dict: {"state", "detail", "value"}.
 
+def classify_http(code, expect_max):
+    """Map an HTTP status code to a health state (pure, no I/O)."""
+    if code <= expect_max:
+        return "UP"
+    if code < 500:
+        return "WARN"
+    return "DOWN"
+
+
+def mbps(num_bytes, seconds):
+    """Throughput in megabits per second, or None if not measurable."""
+    if not seconds or seconds <= 0 or not num_bytes:
+        return None
+    return (num_bytes * 8) / seconds / 1e6
+
+
 def check_http(svc):
     url = svc["target"]
     expect_max = int(svc.get("expect_max", 399))
@@ -156,11 +173,9 @@ def check_http(svc):
         return {"state": "DOWN", "detail": f"{exc}", "value": "\u2014"}
 
     latency = int((time.perf_counter() - start) * 1000)
-    if code <= expect_max:
-        return {"state": "UP", "detail": f"HTTP {code}", "value": f"{latency} ms"}
-    if code < 500:
-        return {"state": "WARN", "detail": f"HTTP {code}", "value": f"{latency} ms"}
-    return {"state": "DOWN", "detail": f"HTTP {code}", "value": "\u2014"}
+    state = classify_http(code, expect_max)
+    value = "\u2014" if state == "DOWN" else f"{latency} ms"
+    return {"state": state, "detail": f"HTTP {code}", "value": value}
 
 
 def check_tcp(svc):
@@ -216,10 +231,7 @@ def measure_upload():
     start = time.perf_counter()
     with urllib.request.urlopen(req, timeout=NETPERF_TIMEOUT) as resp:
         resp.read()
-    secs = time.perf_counter() - start
-    if secs <= 0:
-        return None
-    return (UPLOAD_BYTES * 8) / secs / 1e6
+    return mbps(UPLOAD_BYTES, time.perf_counter() - start)
 
 
 def measure_download():
@@ -236,10 +248,7 @@ def measure_download():
             if not chunk:
                 break
             total += len(chunk)
-    secs = time.perf_counter() - start
-    if secs <= 0 or total == 0:
-        return None
-    return (total * 8) / secs / 1e6
+    return mbps(total, time.perf_counter() - start)
 
 
 def check_netperf(svc):

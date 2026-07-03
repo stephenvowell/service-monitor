@@ -1,0 +1,13 @@
+# Normalize line endings on commit; check out native on each platform.
+* text=auto
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.ps1  text eol=crlf
+
+# Binary assets
+*.png binary
+*.ico binary
