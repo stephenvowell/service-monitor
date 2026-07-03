@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# App runtime config (contains your service list; keep local)
+service_monitor_config.json
+
+# Windows
+desktop.ini
+Thumbs.db
