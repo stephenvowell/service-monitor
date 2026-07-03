@@ -5,7 +5,12 @@ things you care about — your website, the health board, the cam, the Pi, the
 ESP32 — and beeps when something goes down. Same spirit as the backup app:
 one file, plain Tkinter, no external packages.
 
-![status dots](docs/screenshot.png)
+![Service Health Monitor showing status cards for a website, health board, camera, Raspberry Pi, ESP32, plus internet download/upload speed and ping](docs/screenshot.png)
+
+*The dashboard at a glance: each service is a card with a colored status pill
+(green UP / amber WARN / red DOWN), a headline value (response time, or Mbps
+for the speed cards), and a footer with detail + last-checked time. The header
+shows an "Up N/N" summary that turns amber or red if anything degrades.*
 
 ## Run it
 
